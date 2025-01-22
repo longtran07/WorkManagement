@@ -1,0 +1,23 @@
+server:
+  port: 8802
+  servlet:
+    context-path: /user-service
+
+eureka:
+  client: service-url.default-zone=http://localhost:8761/eureka
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:orcl
+    password: auth
+    username: auth
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+jwt:
+  signerKey: "1TjXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
