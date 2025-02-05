@@ -3,7 +3,7 @@ package com.example.userservice.controllers;
 import com.example.userservice.model.dto.request.AuthenticationRequest;
 import com.example.userservice.model.dto.request.IntrospectRequest;
 import com.example.userservice.service.AuthenticationService;
-import com.longtran.commonlibrary.models.dtos.response.ResponseObject;
+import com.longtran.commons.models.dtos.response.ResponseObject;
 import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

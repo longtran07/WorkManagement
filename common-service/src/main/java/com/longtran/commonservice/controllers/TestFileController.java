@@ -1,6 +1,6 @@
 package com.longtran.commonservice.controllers;
 
-import com.longtran.commonlibrary.integration.minio.MinioChanel;
+import com.longtran.commons.integration.minio.MinioChanel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -8,8 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.InputStream;
 
 @RestController
 @RequestMapping("api/v1/test")

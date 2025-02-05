@@ -1,6 +1,6 @@
 package com.longtran.commonservice.configurations;
 
-import com.longtran.commonlibrary.exceptions.GlobalExceptionHandler;
+import com.longtran.commons.exceptions.GlobalExceptionHandler;
 import com.longtran.commonservice.models.dtos.response.ItemResponse;
 import com.longtran.commonservice.models.entity.Item;
 import org.modelmapper.ModelMapper;

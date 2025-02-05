@@ -1,10 +1,9 @@
 package com.longtran.commonservice.services.department;
 
-import com.longtran.commonservice.models.dtos.request.DepartmentRequest;
-import com.longtran.commonlibrary.exceptions.DataNotFoundException;
-import com.longtran.commonservice.models.dtos.response.CategoryResponse;
+import com.longtran.commonservice.models.dtos.request.DeleteRequest;
+import com.longtran.commonservice.models.dtos.request.department.DepartmentRequest;
+import com.longtran.commons.exceptions.DataNotFoundException;
 import com.longtran.commonservice.models.dtos.response.DepartmentResponse;
-import com.longtran.commonservice.models.entity.Category;
 import com.longtran.commonservice.models.entity.Department;
 import com.longtran.commonservice.repositories.DepartmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -81,6 +79,23 @@ public class DepartmentServiceImpl implements DepartmentService {
                 ()->new DataNotFoundException("Department with id " + departmentId + " not found")
         );
         departmentRepository.delete(department);
+
+    }
+
+    @Override
+    public void deleteByDepartmentCode(String departmentCode) {
+        departmentRepository.deleteDepartmentByDepartmentCode(departmentCode);
+    }
+
+    @Override
+    public void deleteDepartments(DeleteRequest deleteRequest) {
+        List<Long> ids=deleteRequest.getIds();
+        for(Long id:ids){
+            departmentRepository.findById(id).orElseThrow(
+                    ()->new DataNotFoundException("Department with id " + id + " not found")
+            );
+            deleteDepartment(id);
+        }
 
     }
 }

@@ -1,6 +1,7 @@
 package com.longtran.commonservice.controllers;
 
-import com.longtran.commonservice.models.dtos.request.DepartmentRequest;
+import com.longtran.commonservice.models.dtos.request.DeleteRequest;
+import com.longtran.commonservice.models.dtos.request.department.DepartmentRequest;
 import com.longtran.commonservice.models.dtos.response.*;
 import com.longtran.commonservice.models.entity.Department;
 import com.longtran.commonservice.services.department.DepartmentService;
@@ -8,13 +9,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/department")
@@ -122,12 +120,32 @@ public class DepartmentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseObject> deleteCategory(@PathVariable("id") Long id) {
+    public ResponseEntity<ResponseObject> deleteDepartment(@PathVariable("id") Long id) {
         departmentService.deleteDepartment(id);
         return ResponseEntity.ok().body(ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Department deleted successfully")
                 .build());
+    }
+
+
+    @DeleteMapping("/delete-by-department-code/{department_code}")
+    public ResponseEntity<ResponseObject> deleteByDepartmentCode(@PathVariable("department_code") String departmentCode) {
+        departmentService.deleteByDepartmentCode(departmentCode);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Department deleted successfully")
+                .build());
+    }
+
+    @DeleteMapping("/batch")
+    public ResponseEntity<ResponseObject> deleteDepartments(@RequestBody DeleteRequest request) {
+
+            departmentService.deleteDepartments(request);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Deleted department "+ request.getIds().toString() +" successfully")
+                    .build());
     }
 
 }

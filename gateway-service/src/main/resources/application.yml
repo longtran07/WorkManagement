@@ -1,6 +1,9 @@
 server:
   port: 8762
 
+app:
+  api-prefix: /api/v1
+
 spring:
   main:
     web-application-type: reactive
@@ -8,13 +11,6 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOrigins: "http://localhost:3000"
-            allowedMethods: "*"
-            allowedHeaders: "*"
-            allowCredentials: true
       routes:
         - id: common-service
           uri: http://localhost:8801

@@ -1,8 +1,7 @@
 package com.longtran.commonservice.services.items;
 
-import com.longtran.commonlibrary.exceptions.DataNotFoundException;
+import com.longtran.commons.exceptions.DataNotFoundException;
 import com.longtran.commonservice.models.dtos.request.ItemRequest;
-import com.longtran.commonservice.models.dtos.response.ItemResponse;
 import com.longtran.commonservice.models.entity.Category;
 import com.longtran.commonservice.models.entity.Item;
 import com.longtran.commonservice.repositories.CategoryRepository;

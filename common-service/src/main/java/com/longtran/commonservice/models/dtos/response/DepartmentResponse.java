@@ -13,13 +13,14 @@ import org.modelmapper.ModelMapper;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DepartmentResponse {
-    @JsonProperty("department_code")
+
+    private String departmentId;
+
     private String departmentCode;
 
-    @JsonProperty("department_name")
     private String departmentName;
-    @JsonProperty("parent_department_id")
+
     private Long parentDepartmentId;
-    @JsonProperty("status")
+
     private Integer status;
 }

@@ -1,8 +1,7 @@
 package com.longtran.commonservice.configurations;
 
-import com.longtran.commonlibrary.configuration.MinioConfig;
-import com.longtran.commonlibrary.configuration.properties.MinioProperties;
-import com.longtran.commonlibrary.integration.minio.MinioChanel;
+import com.longtran.commons.configuration.properties.MinioProperties;
+import com.longtran.commons.integration.minio.MinioChanel;
 
 import io.minio.MinioClient;
 

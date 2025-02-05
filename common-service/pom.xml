@@ -87,7 +87,7 @@
 
         <dependency>
             <groupId>com.longtran</groupId>
-            <artifactId>common-library</artifactId>
+            <artifactId>commons</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 

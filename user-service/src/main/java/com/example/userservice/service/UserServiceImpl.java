@@ -4,7 +4,7 @@ import com.example.userservice.mapper.UserDetailMapper;
 import com.example.userservice.mapper.UserMapper;
 import com.example.userservice.model.entity.Users;
 import com.example.userservice.repository.httpclient.UserDetailClient;
-import com.longtran.commonlibrary.exceptions.ExistingEntityException;
+import com.longtran.commons.exceptions.ExistingEntityException;
 import com.example.userservice.model.dto.request.UserCreationRequest;
 import com.example.userservice.model.dto.request.UserUpdatePasswordRequest;
 import com.example.userservice.model.dto.response.UserResponse;

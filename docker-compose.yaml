@@ -7,7 +7,7 @@ services:
       MINIO_ROOT_PASSWORD: admin@2024
     volumes: #      lưu trữ lâu dài trên máy host
       - ./data:/bitnami/minio/data
-      - ./config:/opt/bitnami/minio/config
+      - ./configuration:/opt/bitnami/minio/configuration
     ports:
       - '9000:9000'
       - '9001:9001'

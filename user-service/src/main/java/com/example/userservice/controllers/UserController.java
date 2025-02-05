@@ -5,7 +5,7 @@ import com.example.userservice.model.dto.request.UserCreationRequest;
 import com.example.userservice.model.dto.request.UserUpdatePasswordRequest;
 import com.example.userservice.model.dto.response.UserResponse;
 import com.example.userservice.service.UserService;
-import com.longtran.commonlibrary.models.dtos.response.ResponseObject;
+import com.longtran.commons.models.dtos.response.ResponseObject;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

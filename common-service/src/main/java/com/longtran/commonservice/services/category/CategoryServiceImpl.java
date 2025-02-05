@@ -1,7 +1,7 @@
 package com.longtran.commonservice.services.category;
 
 import com.longtran.commonservice.models.dtos.request.CategoryRequest;
-import com.longtran.commonlibrary.exceptions.DataNotFoundException;
+import com.longtran.commons.exceptions.DataNotFoundException;
 import com.longtran.commonservice.models.dtos.response.CategoryResponse;
 import com.longtran.commonservice.models.entity.Category;
 import com.longtran.commonservice.repositories.CategoryRepository;
@@ -10,13 +10,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)

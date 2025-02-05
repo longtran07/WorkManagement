@@ -1,7 +1,7 @@
 package com.longtran.commonservice.services.users;
 
-import com.longtran.commonlibrary.exceptions.DataNotFoundException;
-import com.longtran.commonlibrary.exceptions.ExistingEntityException;
+import com.longtran.commons.exceptions.DataNotFoundException;
+import com.longtran.commons.exceptions.ExistingEntityException;
 import com.longtran.commonservice.models.dtos.request.UsersRequest;
 import com.longtran.commonservice.models.entity.Department;
 import com.longtran.commonservice.models.entity.User;
@@ -9,8 +9,6 @@ import com.longtran.commonservice.repositories.DepartmentRepository;
 import com.longtran.commonservice.repositories.UsersRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

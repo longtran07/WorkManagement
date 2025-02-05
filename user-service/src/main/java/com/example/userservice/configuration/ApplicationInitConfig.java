@@ -4,6 +4,7 @@ import com.example.userservice.model.dto.request.UserDetailRequest;
 import com.example.userservice.model.entity.Users;
 import com.example.userservice.repository.UserRepository;
 import com.example.userservice.repository.httpclient.UserDetailClient;
+import com.longtran.commons.exceptions.GlobalExceptionHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -47,5 +48,10 @@ public class ApplicationInitConfig {
                 log.warn("admin user has been created with default password: admin, please change it");
             }
         };
+    }
+
+    @Bean
+    GlobalExceptionHandler globalExceptionHandler() {
+        return new GlobalExceptionHandler();
     }
 }

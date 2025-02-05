@@ -6,7 +6,7 @@ import com.example.userservice.model.dto.response.AuthenticationResponse;
 import com.example.userservice.model.dto.response.IntrospectResponse;
 import com.example.userservice.model.entity.Users;
 import com.example.userservice.repository.UserRepository;
-import com.longtran.commonlibrary.exceptions.DataNotFoundException;
+import com.longtran.commons.exceptions.DataNotFoundException;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;

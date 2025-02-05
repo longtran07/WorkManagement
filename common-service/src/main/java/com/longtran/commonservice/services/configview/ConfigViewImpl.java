@@ -2,7 +2,7 @@ package com.longtran.commonservice.services.configview;
 
 
 import com.longtran.commonservice.models.dtos.request.ConfigViewRequest;
-import com.longtran.commonlibrary.exceptions.DataNotFoundException;
+import com.longtran.commons.exceptions.DataNotFoundException;
 import com.longtran.commonservice.models.entity.ConfigView;
 import com.longtran.commonservice.repositories.ConfigViewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
