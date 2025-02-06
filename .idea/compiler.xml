@@ -9,8 +9,8 @@
         <outputRelativeToContentRoot value="true" />
         <module name="common-service" />
         <module name="eureka-server" />
-        <module name="commons" />
         <module name="gateway-service" />
+        <module name="commons" />
       </profile>
       <profile name="Annotation profile for microservices System" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -28,11 +28,19 @@
         <module name="user-service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="auth-service" target="21" />
+      <module name="Common" target="21" />
+      <module name="config-service" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Common" options="-parameters" />
+      <module name="auth-service" options="-parameters" />
       <module name="common-service" options="-parameters" />
       <module name="commons" options="-parameters" />
+      <module name="config-service" options="-parameters" />
       <module name="eureka-server" options="-parameters" />
       <module name="gateway-service" options="-parameters" />
       <module name="user-service" options="-parameters -Amapstruct.suppressGeneratorTimestamp=true -Amapstruct.defaultComponentModel=spring -Amapstruct.verbose=true" />
