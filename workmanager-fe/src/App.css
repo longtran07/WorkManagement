@@ -1,0 +1,16 @@
+.app {
+  display: flex;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 16.666667%; /* Để content không bị Sidebar đè lên */
+  padding: 20px;
+}
+
+.full-screen {
+  margin-left: 0 !important;
+  width: 100% !important;
+}

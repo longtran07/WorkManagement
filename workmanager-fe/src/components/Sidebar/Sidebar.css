@@ -1,0 +1,47 @@
+.sidebar {
+    width: 16.666667%; /* 1/6 màn hình */
+    height: 100vh;
+    background: white;
+    border-right: 1px solid #e5e7eb;
+    position: fixed;
+    left: 0;
+    top: 0;
+  }
+  
+  .logo {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .logo h1 {
+    font-size: 1.2rem;
+    color: #374151;
+  }
+  
+  .menu {
+    padding: 16px;
+  }
+  
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #374151;
+    text-decoration: none;
+  }
+  
+  .menu-item:hover {
+    background: #f3f4f6;
+  }
+  
+  .menu-item.active {
+    background: #8b5cf6;
+    color: white;
+  }

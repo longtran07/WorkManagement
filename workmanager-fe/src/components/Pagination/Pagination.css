@@ -1,0 +1,23 @@
+/* Custom CSS adjustments */
+.btn-page {
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-page.active {
+  background: #8b5cf6;
+  color: white;
+  border-color: #8b5cf6;
+}
+
+.pagination .form-select {
+  padding: 6px 8px;
+  min-width: 100px;
+}
+
+.pagination-controls .dots {
+  padding: 0 4px;
+}
