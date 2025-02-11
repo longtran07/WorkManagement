@@ -11,14 +11,12 @@ import lombok.*;
 @AllArgsConstructor
 
 public class CategoryResponse {
+    private Long categoryId;
 
-    @JsonProperty("category_code")
     private String categoryCode;
 
-    @JsonProperty("category_name")
     private String categoryName;
 
-    @JsonProperty("status")
     private Long status;
 
 }

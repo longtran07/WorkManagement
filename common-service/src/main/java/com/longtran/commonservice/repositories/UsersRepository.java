@@ -1,5 +1,7 @@
 package com.longtran.commonservice.repositories;
 
+import com.longtran.commonservice.models.entity.Department;
+import com.longtran.commonservice.models.entity.Item;
 import com.longtran.commonservice.models.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,16 +19,16 @@ public interface UsersRepository extends JpaRepository<User, Long> {
     Page<User> findAll(Pageable pageable);
 
 
-    @Query("SELECT u FROM User u where " +
-            "(:username is null or :username = '' or u.username LIKE %:username%)  AND" +
-            "(:phoneNumber is null or :phoneNumber = '' or u.phoneNumber LIKE %:phoneNumber%)  AND " +
-            "(:email is null or :email = '' or u.email LIKE %:email%)  AND" +
-            "(:lastName is null or :lastName = '' or u.lastName LIKE %:lastName%) " )
+    void deleteByUsername(String username);
 
-    Page<User> searchUsers(
-            @Param("username") String keyword,
-            @Param("lastName") String lastName,
-            @Param("phoneNumber") String phoneNumber,
-            @Param("email") String email,
-            Pageable pageable);
+    @Query("SELECT u FROM User u WHERE "
+            + "(:username IS NULL OR LOWER(u.username) LIKE LOWER(CONCAT('%', :username, '%'))) AND "
+            + "(:lastName IS NULL OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :lastName, '%'))) AND "
+            + "(:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND "
+            + "(:phoneNumber IS NULL OR LOWER(u.phoneNumber) LIKE LOWER(CONCAT('%', :phoneNumber, '%')))")
+    Page<User> searchUsers(@Param("username") String departmentCode,
+                                       @Param("lastName") String lastname,
+                                       @Param("email") String email,
+                                       @Param("phoneNumber") String phoneNumber,
+                                       Pageable pageable);
 }

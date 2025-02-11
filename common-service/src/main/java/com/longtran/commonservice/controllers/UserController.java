@@ -1,9 +1,8 @@
 package com.longtran.commonservice.controllers;
 
+import com.longtran.commonservice.models.dtos.request.DeleteRequest;
 import com.longtran.commonservice.models.dtos.request.UsersRequest;
-import com.longtran.commonservice.models.dtos.response.CategoryResponse;
-import com.longtran.commonservice.models.dtos.response.ResponseObject;
-import com.longtran.commonservice.models.dtos.response.UserResponse;
+import com.longtran.commonservice.models.dtos.response.*;
 import com.longtran.commonservice.models.entity.Category;
 import com.longtran.commonservice.models.entity.User;
 import com.longtran.commonservice.services.users.UserService;
@@ -96,20 +95,54 @@ public class UserController {
 //        return ResponseEntity.ok().body(responseObject);
 //    }
 
-    @GetMapping("")
-    public ResponseEntity<ResponseObject> getAllCategories() {
-        List<User> users= userService.getAllUsers();
+
+    @GetMapping("/search")
+    public ResponseEntity<ResponseObject> searchUsers(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String lastName,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserResponse> userResponsePage = userService.searchUsers(username, lastName, email, phoneNumber, pageable);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Get all categories")
+                .message("Get all Departments")
                 .result(
-                        users
-                                .stream()
-                                .map(user ->
-                                        modelMapper.map(user, UserResponse.class))
-                                .collect(Collectors.toList())
-
-                )
+                        UserListResponse.builder()
+                                .userResponses(userResponsePage.getContent())
+                                .totalPages(userResponsePage.getTotalPages())
+                                .currentPage(userResponsePage.getNumber())
+                                .pageSize(userResponsePage.getSize())
+                                .totalItems(userResponsePage.getTotalElements())
+                                .isFirst(userResponsePage.isFirst())
+                                .isLast(userResponsePage.isLast())
+                                .hasNext(userResponsePage.hasNext())
+                                .hasPrevious(userResponsePage.hasPrevious())
+                                .build()
+                ) // Sử dụng content của Page object
                 .build());
     }
+
+    @DeleteMapping("/delete-by-username/{username}")
+    public ResponseEntity<ResponseObject> deleteByUsername(@PathVariable("username") String username) {
+        userService.deleteByUsername(username);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("User deleted successfully")
+                .build());
+    }
+
+    @DeleteMapping("/batch")
+    public ResponseEntity<ResponseObject> deleteUsers(@RequestBody DeleteRequest request) {
+
+        userService.deleteUsers(request);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Deleted Category "+ request.getIds().toString() +" successfully")
+                .build());
+    }
+
+
 }

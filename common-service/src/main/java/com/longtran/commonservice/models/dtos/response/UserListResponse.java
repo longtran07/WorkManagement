@@ -9,9 +9,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class CategoryListResponse {
-    List<CategoryResponse> categoryResponses;
+public class UserListResponse {
+    List<UserResponse> userResponses;
     private int currentPage;
     private int totalPages;
     private int pageSize;

@@ -1,9 +1,8 @@
 package com.longtran.commonservice.controllers;
 
 import com.longtran.commonservice.models.dtos.request.CategoryRequest;
-import com.longtran.commonservice.models.dtos.response.CategoryListResponse;
-import com.longtran.commonservice.models.dtos.response.CategoryResponse;
-import com.longtran.commonservice.models.dtos.response.ResponseObject;
+import com.longtran.commonservice.models.dtos.request.DeleteRequest;
+import com.longtran.commonservice.models.dtos.response.*;
 import com.longtran.commonservice.models.entity.Category;
 import com.longtran.commonservice.services.category.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +39,36 @@ public class CategoryController {
                                 .categoryResponses(categoryResponses)
                                 .totalPages(totalPages).build()) // Sử dụng content của Page object
 
+                .build());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ResponseObject> searchCategories(
+            @RequestParam(required = false) String categoryCode,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size ) {
+        Page<CategoryResponse> categoryResponsesPages = categoryService.searchCategories(
+                categoryCode,
+                categoryName,
+                page,
+                size);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Get all Departments")
+                .result(
+                        CategoryListResponse.builder()
+                                .categoryResponses(categoryResponsesPages.getContent())
+                                .totalPages(categoryResponsesPages.getTotalPages())
+                                .currentPage(categoryResponsesPages.getNumber())
+                                .pageSize(categoryResponsesPages.getSize())
+                                .totalItems(categoryResponsesPages.getTotalElements())
+                                .isFirst(categoryResponsesPages.isFirst())
+                                .isLast(categoryResponsesPages.isLast())
+                                .hasNext(categoryResponsesPages.hasNext())
+                                .hasPrevious(categoryResponsesPages.hasPrevious())
+                                .build()
+                ) // Sử dụng content của Page object
                 .build());
     }
 
@@ -82,6 +111,25 @@ public class CategoryController {
                             .status(HttpStatus.OK)
                             .message("Deleted Category with id : " + id + "successfully")
                         .build());
+    }
+
+    @DeleteMapping("/delete-by-category-code/{categoryCode}")
+    public ResponseEntity<ResponseObject> deleteByCategoryCode(@PathVariable("categoryCode") String categoryCode) {
+        categoryService.deleteByCategoryCode(categoryCode);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Category deleted successfully")
+                .build());
+    }
+
+    @DeleteMapping("/batch")
+    public ResponseEntity<ResponseObject> deleteCategories(@RequestBody DeleteRequest request) {
+
+        categoryService.deleteCategories(request);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Deleted Category "+ request.getIds().toString() +" successfully")
+                .build());
     }
 
 }

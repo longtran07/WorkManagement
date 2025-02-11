@@ -20,7 +20,7 @@ const Login = () => {
       // Xử lý sau khi đăng nhập thành công
       // Ví dụ: chuyển hướng người dùng đến trang chính
       console.log('Đăng nhập thành công:', response);
-      window.location.href = '/departments'; // hoặc sử dụng navigate từ react-router-dom
+      window.location.href = '/dashboard'; // hoặc sử dụng navigate từ react-router-dom
     } catch (error) {
       setError(error.response?.data?.message || 'Có lỗi xảy ra khi đăng nhập');
     } finally {

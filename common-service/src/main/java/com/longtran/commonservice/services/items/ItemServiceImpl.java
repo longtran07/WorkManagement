@@ -1,12 +1,21 @@
 package com.longtran.commonservice.services.items;
 
 import com.longtran.commons.exceptions.DataNotFoundException;
+import com.longtran.commonservice.models.dtos.request.DeleteRequest;
 import com.longtran.commonservice.models.dtos.request.ItemRequest;
+import com.longtran.commonservice.models.dtos.response.CategoryResponse;
+import com.longtran.commonservice.models.dtos.response.ItemResponse;
 import com.longtran.commonservice.models.entity.Category;
 import com.longtran.commonservice.models.entity.Item;
 import com.longtran.commonservice.repositories.CategoryRepository;
 import com.longtran.commonservice.repositories.ItemRepository;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +23,13 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 
 public class ItemServiceImpl implements ItemService {
-    private final ItemRepository itemRepository;
-    private final CategoryRepository categoryRepository;
+    ItemRepository itemRepository;
+    CategoryRepository categoryRepository;
+    ModelMapper modelMapper;
+
     @Override
     public Item createItem(ItemRequest itemRequest) {
         if(itemRepository.existsByItemCode(itemRequest.getItemCode())){
@@ -74,16 +86,49 @@ public class ItemServiceImpl implements ItemService {
 
     }
 
-
-    @Override
-    public List<Item> getAllItems() {
-        return itemRepository.findAll();
-    }
-
     @Override
     public Item getItemById(Long id) {
         return itemRepository.findById(id).orElseThrow(
                 () -> new DataNotFoundException("Item with id " + id + " not found")
         );
     }
+
+    @Override
+    public Page<ItemResponse> getAllItems(Pageable pageable) {
+        Page<Item> itemPage;
+        itemPage=itemRepository.findAll(pageable);
+        return itemPage.map(item -> modelMapper.map(item, ItemResponse.class));
+    }
+
+    @Override
+    @Transactional
+    public void deleteByItemCode(String itemCode) {
+        itemRepository.deleteByItemCode(itemCode);
+
+    }
+
+    @Override
+    public void deleteItems(DeleteRequest deleteRequest) {
+        List<Long> ids = deleteRequest.getIds();
+        for (Long id : ids) {
+            itemRepository.findById(id).orElseThrow(
+                    () -> new DataNotFoundException("Item with id " + id + " not found")
+            );
+            deleteItem(id);
+
+        }
+    }
+
+        @Override
+        public Page<ItemResponse> searchItems (
+                String itemCode,
+                String itemName,
+                Long categoryId,
+                Pageable pageable){
+            Page<Item> itemPage = itemRepository.searchItems(itemCode, itemName, categoryId, pageable);
+            return itemPage.map(
+                    item -> modelMapper.map(item, ItemResponse.class));
+        }
+
+
 }

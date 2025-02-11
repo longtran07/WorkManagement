@@ -15,7 +15,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     void deleteDepartmentByDepartmentCode(String departmentCode);
 
-    Department findByDepartmentCode(String departmentCode);
 
     @Query("SELECT d FROM Department d WHERE "
             + "(:departmentCode IS NULL OR LOWER(d.departmentCode) LIKE LOWER(CONCAT('%', :departmentCode, '%'))) AND "
@@ -24,7 +23,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
                                        @Param("departmentName") String departmentName,
                                        Pageable pageable);
 
-    void deleteAllByDepartmentIdIn(List<Long> departmentIds);
+
 
 
 }

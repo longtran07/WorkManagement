@@ -6,11 +6,10 @@
 
 .main-content {
   flex: 1;
-  margin-left: 16.666667%; /* Để content không bị Sidebar đè lên */
   padding: 20px;
+  margin-left: 280px; /* Bằng với width của sidebar */
 }
 
 .full-screen {
-  margin-left: 0 !important;
   width: 100% !important;
 }

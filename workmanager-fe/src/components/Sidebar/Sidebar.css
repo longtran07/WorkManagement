@@ -1,47 +1,84 @@
 .sidebar {
-    width: 16.666667%; /* 1/6 màn hình */
-    height: 100vh;
-    background: white;
-    border-right: 1px solid #e5e7eb;
-    position: fixed;
-    left: 0;
-    top: 0;
-  }
-  
-  .logo {
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .logo h1 {
-    font-size: 1.2rem;
-    color: #374151;
-  }
-  
-  .menu {
-    padding: 16px;
-  }
-  
-  .menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    margin-bottom: 4px;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #374151;
-    text-decoration: none;
-  }
-  
-  .menu-item:hover {
-    background: #f3f4f6;
-  }
-  
-  .menu-item.active {
-    background: #8b5cf6;
-    color: white;
-  }
+  position: fixed;
+  z-index: 10;
+  width: 280px;
+  height: 100vh;
+  background: white;
+  padding: 1rem;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.logo h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #374151;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.menu-item:hover {
+  background-color: #f3f4f6;
+}
+
+.menu-item.active {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+}
+
+.menu-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.menu-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.menu-group-header svg:last-child {
+  margin-left: auto;
+}
+
+.submenu {
+  margin-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.submenu-item {
+  font-size: 0.9rem;
+}
+
+.user-info {
+  padding: 1rem 0;
+  border-top: 1px solid #e5e7eb;
+}

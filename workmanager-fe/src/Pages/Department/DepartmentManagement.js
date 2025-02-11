@@ -5,7 +5,8 @@ import DataTable from '../../components/DataTable/DataTable';
 import Pagination from '../../components/Pagination/Pagination';
 import Popup from '../../components/Popup/Delete';
 import Toast from '../../components/Toast/Toast';
-import AddDepartmentPopup from './AddDepartmentPopup';
+import DepartmentPopup from './DepartmentPopup';
+import { updateDepartment } from '../../services/api-service/DepartmentService';
 import './DepartmentManagement.css';
 import { departmentApi } from '../../services/api-service/api';
 import httpClient from '../../configurations/httpClient';
@@ -35,14 +36,18 @@ const DepartmentManagement = () => {
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [deleteMode, setDeleteMode] = useState('single');
 
-  // Add department state
-  const [showAddPopup, setShowAddPopup] = useState(false);
-  const [newDepartmentForm, setNewDepartmentForm] = useState({
+   // Add/Edit Department 
+  const [showPopup, setShowPopup] = useState(false);
+  const [DepartmentForm, setDepartmentForm] = useState({
     departmentCode: '',
     departmentName: '',
     parentDepartmentId: '',
     status: 1
   });
+  const [isEdit, setIsEdit] = useState(false);
+  const [editDepartmentId, setEditDepartmentId] = useState(null); // State để lưu ID của category đang edit
+  
+
 
   // Table columns configuration
   const columns = [
@@ -120,9 +125,12 @@ debugger
     const { name, value } = e.target;
     setSearchForm(prev => ({ ...prev, [name]: value }));
   };
-
+  // Reset form tìm kiếm
   const handleReset = () => {
-    setSearchForm({ departmentCode: '', departmentName: '' });
+    setSearchForm({ 
+      departmentCode: '', 
+      departmentName: '' 
+    });
     fetchDepartments(1, pageSize);
   };
 
@@ -144,6 +152,18 @@ debugger
     setDepartmentToDelete(department);
     setDeleteMode('single');
     setShowDeletePopup(true);
+  };
+
+  const handleUpdate = (department) => {
+    setDepartmentForm({
+      departmentCode: department.departmentCode,
+      departmentName: department.departmentName,
+      parentDepartmentId:department.parentDepartmentId,
+      status: department.status ? 1 : 0
+    });
+    setEditDepartmentId(department.id); // Gán ID của category đang edit
+    setIsEdit(true);
+    setShowPopup(true);
   };
 
   const handleDeleteSelected = () => {
@@ -179,16 +199,16 @@ debugger
   // Form handlers
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setNewDepartmentForm(prev => ({ ...prev, [name]: value }));
+    setDepartmentForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAddDepartment = async (e) => {
     e.preventDefault();
     try {
-      await httpClient.post(departmentApi, newDepartmentForm);
+      await httpClient.post(departmentApi, DepartmentForm);
       Toast.success("Thêm phòng ban thành công");
-      setShowAddPopup(false);
-      setNewDepartmentForm({
+      setShowPopup(false);
+      setDepartmentForm({
         departmentCode: '',
         departmentName: '',
         parentDepartmentId: '',
@@ -197,6 +217,24 @@ debugger
       fetchDepartments(currentPage, pageSize, searchForm);
     } catch (error) {
       Toast.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm");
+    }
+  };
+
+  const handleUpdateDepartment = async (e) => {
+    e.preventDefault();
+    try {
+      await updateDepartment(editDepartmentId, DepartmentForm); // Gửi yêu cầu cập nhật với ID đúng
+      Toast.success("Cập nhật danh mục thành công");
+      setShowPopup(false);
+      setDepartmentForm({
+        departmentCode: '',
+        departmentName: '',
+        parentDepartmentId: '',
+        status: 1
+      });
+      fetchDepartments(currentPage, pageSize, searchForm);
+    } catch (error) {
+      Toast.error(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
     }
   };
 
@@ -219,7 +257,16 @@ debugger
         <div className="d-flex gap-2">
           <button 
             className="btn btn-primary d-flex align-items-center gap-2"
-            onClick={() => setShowAddPopup(true)}
+            onClick={() => {
+              setShowPopup(true);
+              setIsEdit(false);
+              setDepartmentForm({
+                departmentCode: '',
+                departmentName: '',
+                parentDepartmentId: '',
+                status: 1
+              });
+            }}
           >
             <UserPlus size={16} />
             Thêm phòng ban
@@ -308,6 +355,7 @@ debugger
             selectedItems={selectedDepartments}
             onSelectAll={handleSelectAll}
             onSelectOne={handleSelectOne}
+            onEdit={handleUpdate}
             onDelete={handleDelete}
           />
           
@@ -334,13 +382,14 @@ debugger
         />
       )}
 
-      {showAddPopup && (
-        <AddDepartmentPopup
-          show={showAddPopup}
-          onClose={() => setShowAddPopup(false)}
-          onSubmit={handleAddDepartment}
-          formData={newDepartmentForm}
+      {showPopup && (
+        <DepartmentPopup
+          show={showPopup}
+          onClose={() => setShowPopup(false)}
+          onSubmit={isEdit ? handleUpdateDepartment : handleAddDepartment}
+          formData={DepartmentForm}
           onChange={handleFormChange}
+          isEdit={isEdit}
         />
       )}
     </div>

@@ -1,0 +1,98 @@
+.dashboard-container {
+    background: linear-gradient(135deg, #f0f4c3, #e1bee7);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-header {
+    background-color: #4f46e5;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+.dashboard-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+.dashboard-date {
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+}
+
+.dashboard-main {
+    flex: 1;
+    padding: 2rem;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.stat-item:hover {
+    transform: translateY(-10px);
+}
+
+.stat-item h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #555;
+}
+
+.stat-item p {
+    font-size: 2rem;
+    color: #333;
+    font-weight: bold;
+}
+
+.dashboard-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.chart-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.chart-item h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #555;
+}
+
+.chart-placeholder {
+    background: #f3f4f6;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    color: #888;
+}
+
+.dashboard-footer {
+    background-color: #4f46e5;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}

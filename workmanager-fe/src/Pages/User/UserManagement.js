@@ -1,12 +1,32 @@
-// src/components/UserManagement/UserManagement.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, UserPlus, Trash2, Edit } from 'lucide-react';
+import DataTable from '../../components/DataTable/DataTable';
+import Pagination from '../../components/Pagination/Pagination';
+import Popup from '../../components/Popup/Delete';
+import Toast from '../../components/Toast/Toast';
+import UserPopup from './UserPopup';
 import './UserManagement.css';
-import axios from 'axios';
-import { getToken } from '../../services/localStorageService';
+import {
+  fetchUsers,
+  addUser,
+  updateUser,
+  deleteUser,
+  deleteUsersBatch
+} from '../../services/api-service/UserService';
 
 const UserManagement = () => {
-  // State cho form tìm kiếm
+  // State management
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  // Search state
   const [searchForm, setSearchForm] = useState({
     username: '',
     name: '',
@@ -14,29 +34,61 @@ const UserManagement = () => {
     phone: ''
   });
 
-  // State cho danh sách users
+  // Delete state
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [deleteMode, setDeleteMode] = useState('single');
 
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // Add user state
+  const [showPopup, setShowPopup] = useState(false);
+  const [userForm, setUserForm] = useState({
+    username: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    status: 1
+  });
+  const [isEdit, setIsEdit] = useState(false);
+  const [editUserId, setEditUserId] = useState(null);
 
-  // Hàm fetch users từ API
-  const fetchUsers = async () => {
+  // Table columns configuration
+  const columns = [
+    { key: 'username', title: 'Tên tài khoản' },
+    { key: 'lastName', title: 'Họ' },
+    { key: 'firstName', title: 'Tên' },
+    { key: 'phone', title: 'Số điện thoại' },
+    { key: 'email', title: 'Email' },
+    {
+      key: 'status',
+      title: 'Trạng thái',
+      render: (value) => (
+        <span className={`status ${value ? 'active' : 'inactive'}`}>
+          {value ? 'Hoạt động' : 'Không hoạt động'}
+        </span>
+      )
+    }
+  ];
+
+  // Data fetching
+  const loadUsers = useCallback(async (page = 1, size = pageSize, searchParams = {}) => {
     try {
-      debugger
       setLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:8762/common/api/v1/users',{
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-              },
-            });
 
+      const result = await fetchUsers(page, size, searchParams);
 
-      // Chuyển đổi dữ liệu từ API sang format phù hợp với component
-      debugger
-      const formattedUsers = response.data.result.map((item, index) => ({
-        id: index + 1, // Tạo id tạm thời
+      const { userResponses, totalPages, totalItems } = result;
+
+      if (!userResponses || userResponses.length === 0) {
+        Toast.error("Không tìm thấy bản ghi");
+        setUsers([]);
+        return;
+      }
+
+      const formattedUsers = userResponses.map((item) => ({
+        id: item.id,
         username: item.username || '',
         firstName: item.first_name || '',
         lastName: item.last_name || '',
@@ -46,21 +98,25 @@ const UserManagement = () => {
       }));
 
       setUsers(formattedUsers);
+      setTotalPages(totalPages);
+      setTotalItems(totalItems);
+      setCurrentPage(page);
+
     } catch (err) {
-      debugger
       setError('Có lỗi xảy ra khi tải dữ liệu');
-      console.error('Error fetching users:', err);
+      console.error('Fetch users error:', err);
+      Toast.error(err.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu");
+
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageSize]);
 
-  // Gọi API khi component mount
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    loadUsers();
+  }, [loadUsers]);
 
-  // Xử lý thay đổi form tìm kiếm
+  // Search handlers
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
     setSearchForm(prev => ({
@@ -69,7 +125,6 @@ const UserManagement = () => {
     }));
   };
 
-  // Reset form tìm kiếm
   const handleReset = () => {
     setSearchForm({
       username: '',
@@ -77,138 +132,298 @@ const UserManagement = () => {
       email: '',
       phone: ''
     });
+    loadUsers(1, pageSize);
+  };
+
+  const handleSearch = () => loadUsers(1, pageSize, searchForm);
+
+  // Pagination handlers
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      loadUsers(page, pageSize, searchForm);
+    }
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+    loadUsers(1, newSize, searchForm);
+  };
+
+  // CRUD operations
+  const handleDelete = (user) => {
+    setUserToDelete(user);
+    setDeleteMode('single');
+    setShowDeletePopup(true);
+  };
+
+  const handleUpdate = (user) => {
+    setUserForm({
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      email: user.email,
+      status: user.status ? 1 : 0
+    });
+    setEditUserId(user.id); 
+    setIsEdit(true);
+    setShowPopup(true);
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedUsers.length === 0) return;
+    setDeleteMode('multiple');
+    setShowDeletePopup(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      if (deleteMode === 'single') {
+        await deleteUser(userToDelete.id);
+      } else {
+        await deleteUsersBatch(selectedUsers);
+      }
+
+      Toast.success("Xóa thành công");
+      loadUsers(currentPage, pageSize, searchForm);
+      setSelectedUsers([]);
+    } catch (error) {
+      console.error('Delete error:', error);
+      Toast.error(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+    } finally {
+      setShowDeletePopup(false);
+      setUserToDelete(null);
+    }
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setUserForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    try {
+      await addUser(userForm);
+      Toast.success("Thêm user thành công");
+      setShowPopup(false);
+      setUserForm({
+        username: '',
+        firstName: '',
+        lastName: '',
+        phone: '',
+        email: '',
+        status: 1
+      });
+      loadUsers(currentPage, pageSize, searchForm);
+    } catch (error) {
+      Toast.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm");
+    }
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    try {
+      await updateUser(editUserId, userForm); 
+      Toast.success("Cập nhật user thành công");
+      setShowPopup(false);
+      setUserForm({
+        username: '',
+        firstName: '',
+        lastName: '',
+        phone: '',
+        email: '',
+        status: 1
+      });
+      loadUsers(currentPage, pageSize, searchForm);
+    } catch (error) {
+      Toast.error(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
+    }
+  };
+
+  // Selection handlers
+  const handleSelectAll = (selectedIds) => setSelectedUsers(selectedIds);
+
+  const handleSelectOne = (id, checked) => {
+    setSelectedUsers(prev => checked 
+      ? [...prev, id] 
+      : prev.filter(itemId => itemId !== id)
+    );
   };
 
   return (
-    <div className="user-management">
-      <div className="header">
+    <div className="container-fluid py-4">
+      {/* Header Section */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Danh sách user</h2>
-        <div className="actions">
-          <button className="btn btn-primary">
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-primary d-flex align-items-center gap-2"
+            onClick={() => {
+              setShowPopup(true);
+              setIsEdit(false);
+              setUserForm({
+                username: '',
+                firstName: '',
+                lastName: '',
+                phone: '',
+                email: '',
+                status: 1
+              });
+            }}
+          >
             <UserPlus size={16} />
             Thêm user
           </button>
-          <button className="btn btn-danger">
+          <button
+            className="btn btn-danger d-flex align-items-center gap-2"
+            onClick={handleDeleteSelected}
+            disabled={selectedUsers.length === 0}
+          >
             <Trash2 size={16} />
-            Xóa user
+            Xóa user {selectedUsers.length > 0 && `(${selectedUsers.length})`}
           </button>
         </div>
       </div>
 
-      {/* Form tìm kiếm */}
-      <div className="search-form">
-        <div className="form-group">
-          <label>Tên tài khoản</label>
-          <input
-            type="text"
-            name="username"
-            value={searchForm.username}
-            onChange={handleSearchChange}
-          />
+      {/* Search Form */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col-md-6">
+              <div className="form-group">
+                <label className="form-label">Tên tài khoản</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="username"
+                  value={searchForm.username}
+                  onChange={handleSearchChange}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group">
+                <label className="form-label">Tên</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="name"
+                  value={searchForm.name}
+                  onChange={handleSearchChange}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  name="email"
+                  value={searchForm.email}
+                  onChange={handleSearchChange}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group">
+                <label className="form-label">Số điện thoại</label>
+                <input
+                  type="tel"
+                  className="form-control"
+                  name="phone"
+                  value={searchForm.phone}
+                  onChange={handleSearchChange}
+                />
+              </div>
+            </div>
+            <div className="col-12">
+              <div className="d-flex gap-2">
+                <button
+                  className="btn btn-primary d-flex align-items-center gap-2"
+                  onClick={handleSearch}
+                >
+                  <Search size={16} />
+                  Tìm kiếm
+                </button>
+                <button className="btn btn-outline-secondary" onClick={handleReset}>
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="form-group">
-          <label>Tên</label>
-          <input
-            type="text"
-            name="name"
-            value={searchForm.name}
-            onChange={handleSearchChange}
-          />
-        </div>
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={searchForm.email}
-            onChange={handleSearchChange}
-          />
-        </div>
-        <div className="form-group">
-          <label>Số điện thoại</label>
-          <input
-            type="tel"
-            name="phone"
-            value={searchForm.phone}
-            onChange={handleSearchChange}
-          />
-        </div>
-        <div className="form-actions">
-          <button className="btn btn-primary" onClick={() => console.log('Tìm kiếm:', searchForm)}>
-            <Search size={16} />
-            Tìm kiếm
-          </button>
-          <button className="btn btn-outline" onClick={handleReset}>
-            Reset
-          </button>
-        </div>
-      </div>
-      {/* Hiển thị loading và error states */}
-      {loading && <div className="loading">Đang tải dữ liệu...</div>}
-      {error && <div className="error">{error}</div>}
-
-      {/* Bảng users */}
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th><input type="checkbox" /></th>
-              <th>STT</th>
-              <th>Hành động</th>
-              <th>Tên tài khoản</th>
-              <th>Họ</th>
-              <th>Tên</th>
-              <th>Số điện thoại</th>
-              <th>Email</th>
-              <th>Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user, index) => (
-              <tr key={user.id}>
-                <td><input type="checkbox" /></td>
-                <td>{index + 1}</td>
-                <td>
-                  <div className="row-actions">
-                    <button className="btn-icon">
-                      <Edit size={16} />
-                    </button>
-                    <button className="btn-icon">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-                <td>{user.username}</td>
-                <td>{user.lastName}</td>
-                <td>{user.firstName}</td>
-                <td>{user.phone}</td>
-                <td>{user.email}</td>
-                <td>
-                  <span className={`status ${user.status ? 'active' : 'inactive'}`}>
-                    {user.status ? 'Hoạt động' : 'Không hoạt động'}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
 
-      {/* Phân trang */}
-      <div className="pagination">
-        <span>Tổng: 100 bản ghi</span>
-        <div className="pagination-controls">
-          <button className="btn-page active">1</button>
-          <button className="btn-page">2</button>
-          <button className="btn-page">3</button>
-          <button className="btn-page">4</button>
-          <span>...</span>
-          <button className="btn-page">40</button>
+      {/* Loading & Error States */}
+      {loading && (
+        <div className="text-center py-4">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Đang tải...</span>
+          </div>
         </div>
-        <select>
-          <option>20/trang</option>
-        </select>
+      )}
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
+
+      {/* Data Table */}
+      <div className="card">
+        <div className="card-body">
+          <DataTable
+            columns={columns}
+            data={users}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            selectable={true}
+            selectedItems={selectedUsers}
+            onSelectAll={handleSelectAll}
+            onSelectOne={handleSelectOne}
+            onEdit={handleUpdate}
+            onDelete={handleDelete}
+          />
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={[10, 20, 50]}
+          />
+        </div>
       </div>
+
+      {/* Modals */}
+      {showDeletePopup && (
+        <Popup
+          message={`Bạn có chắc chắn muốn xóa ${deleteMode === 'single'
+            ? `"${userToDelete?.username}"`
+            : `${selectedUsers.length} user`} không?`}
+          onConfirm={confirmDelete}
+          onCancel={() => setShowDeletePopup(false)}
+        />
+      )}
+
+      {showPopup && (
+        <UserPopup
+          show={showPopup}
+          onClose={() => setShowPopup(false)}
+          onSubmit={isEdit ? handleUpdateUser : handleAddUser}
+          formData={userForm}
+          onChange={handleFormChange}
+          isEdit={isEdit}
+        />
+      )}
     </div>
   );
 };

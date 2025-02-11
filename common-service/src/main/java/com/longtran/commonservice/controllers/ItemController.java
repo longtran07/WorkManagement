@@ -1,14 +1,17 @@
 package com.longtran.commonservice.controllers;
 
+import com.longtran.commonservice.models.dtos.request.DeleteRequest;
 import com.longtran.commonservice.models.dtos.request.ItemRequest;
-import com.longtran.commonservice.models.dtos.response.ItemResponse;
-import com.longtran.commonservice.models.dtos.response.ResponseObject;
+import com.longtran.commonservice.models.dtos.response.*;
 import com.longtran.commonservice.models.entity.Item;
 import com.longtran.commonservice.services.items.ItemService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,25 +28,63 @@ public class ItemController {
     ItemService itemService;
     ModelMapper modelMapper;
     @GetMapping("")
-    public ResponseEntity<ResponseObject> getAllItems(){
-        List<Item> items = itemService.getAllItems();
-        return ResponseEntity.ok().body(
-                ResponseObject.builder()
-                        .status(HttpStatus.OK)
-                        .message("List of items")
-//                        .result(items
-//                                .stream()
-//                                .map(item -> modelMapper.map(item, ItemResponse.class)
-//                        ))
+    public ResponseEntity<ResponseObject> getAllItems(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size ) {
+        Pageable pageable = PageRequest.of(page, size);
 
-                        .result(items
-                                .stream()
-                                .map(ItemResponse::fromItem)
-                                .collect(Collectors.toList())
-                        )
-                        .build()
-        );
+        Page<ItemResponse> itemResponsePage = itemService.getAllItems(pageable);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Get all Departments")
+                .result(
+                        ItemListResponse.builder()
+                                .itemResponses(itemResponsePage.getContent())
+                                .totalPages(itemResponsePage.getTotalPages())
+                                .currentPage(itemResponsePage.getNumber())
+                                .pageSize(itemResponsePage.getSize())
+                                .totalItems(itemResponsePage.getTotalElements())
+                                .isFirst(itemResponsePage.isFirst())
+                                .isLast(itemResponsePage.isLast())
+                                .hasNext(itemResponsePage.hasNext())
+                                .hasPrevious(itemResponsePage.hasPrevious())
+                                .build()
+                ) // Sử dụng content của Page object
+                .build());
+
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<ResponseObject> searchCategories(
+            @RequestParam(required = false) String itemCode,
+            @RequestParam(required = false) String itemName,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size  ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ItemResponse> itemResponsePage = itemService.searchItems(
+                itemCode,itemName,categoryId,pageable
+        );
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Get all Departments")
+                .result(
+                        ItemListResponse.builder()
+                                .itemResponses(itemResponsePage.getContent())
+                                .totalPages(itemResponsePage.getTotalPages())
+                                .currentPage(itemResponsePage.getNumber())
+                                .pageSize(itemResponsePage.getSize())
+                                .totalItems(itemResponsePage.getTotalElements())
+                                .isFirst(itemResponsePage.isFirst())
+                                .isLast(itemResponsePage.isLast())
+                                .hasNext(itemResponsePage.hasNext())
+                                .hasPrevious(itemResponsePage.hasPrevious())
+                                .build()
+                ) // Sử dụng content của Page object
+                .build());
+
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject> getItemById(@PathVariable Long id){
@@ -53,9 +94,7 @@ public class ItemController {
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Item with id: "+id)
-//                        .result(modelMapper.map(item, ItemResponse.class))
-
-                        .result(ItemResponse.fromItem(item))
+                        .result(modelMapper.map(item, ItemResponse.class))
                         .build()
         );
     }
@@ -93,5 +132,24 @@ public class ItemController {
                         .message("Delete item success")
                         .build()
         );
+    }
+
+    @DeleteMapping("/delete-by-item-code/{itemCode}")
+    public ResponseEntity<ResponseObject> deleteByItemCode(@PathVariable("itemCode") String itemCode) {
+        itemService.deleteByItemCode(itemCode);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Item deleted successfully")
+                .build());
+    }
+
+    @DeleteMapping("/batch")
+    public ResponseEntity<ResponseObject> deleteCategories(@RequestBody DeleteRequest request) {
+
+        itemService.deleteItems(request);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Deleted Item "+ request.getIds().toString() +" successfully")
+                .build());
     }
 }
