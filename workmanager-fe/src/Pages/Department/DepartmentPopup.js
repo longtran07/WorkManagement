@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import GenericFormPopup from '../../components/Popup/GenericFormPopup';
+import { getAllDepartment } from '../../services/api-service/DepartmentService';
 
-const DepartmentForm = ({ formData, onChange, isEdit }) => (
+const DepartmentForm = ({ formData, onChange, isEdit, departments }) => (
   <div>
     <div className="form-row">
       <div className="form-group">
@@ -13,7 +14,7 @@ const DepartmentForm = ({ formData, onChange, isEdit }) => (
           type="text"
           className="custom-input"
           name="departmentCode"
-          value={formData.departmentCod || ''}
+          value={formData.departmentCode || ''}
           onChange={onChange}
           required
           placeholder="Nhập mã phòng ban"
@@ -50,6 +51,11 @@ const DepartmentForm = ({ formData, onChange, isEdit }) => (
           onChange={onChange}
         >
           <option value="">Chọn phòng ban</option>
+          {departments.map((department) => (
+            <option key={department.id} value={department.id}>
+              {department.departmentName}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -68,10 +74,43 @@ const DepartmentForm = ({ formData, onChange, isEdit }) => (
         </select>
       </div>
     </div>
+    <div className="form-group">
+      <label className="custom-label">
+        Phòng ban
+      </label>
+      <select
+        className="custom-select"
+        name="departmentId"
+        value={formData.departmentId || ''}
+        onChange={onChange}
+      >
+        <option value="">Phòng ban</option>
+        {departments.map((department) => (
+          <option key={department.id} value={department.id}>
+            {department.departmentName}
+          </option>
+        ))}
+      </select>
+    </div>
   </div>
 );
 
-const AddDepartmentPopup = ({ show, onClose, onSubmit, formData, onChange, isEdit }) => {
+const DepartmentPopup = ({ show, onClose, onSubmit, formData, onChange, isEdit }) => {
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const departmentData = await getAllDepartment();
+        setDepartments(departmentData);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <GenericFormPopup
       show={show}
@@ -79,9 +118,9 @@ const AddDepartmentPopup = ({ show, onClose, onSubmit, formData, onChange, isEdi
       onSubmit={onSubmit}
       title={isEdit ? 'Cập nhật phòng ban' : 'Thêm phòng ban'}
     >
-      <DepartmentForm formData={formData} onChange={onChange} isEdit={isEdit} />
+      <DepartmentForm formData={formData} onChange={onChange} isEdit={isEdit} departments={departments} />
     </GenericFormPopup>
   );
 };
 
-export default AddDepartmentPopup;
+export default DepartmentPopup;

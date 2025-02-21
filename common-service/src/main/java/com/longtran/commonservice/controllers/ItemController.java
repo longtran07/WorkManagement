@@ -2,6 +2,7 @@ package com.longtran.commonservice.controllers;
 
 import com.longtran.commonservice.models.dtos.request.DeleteRequest;
 import com.longtran.commonservice.models.dtos.request.ItemRequest;
+import com.longtran.commonservice.models.dtos.request.SearchItemRequest;
 import com.longtran.commonservice.models.dtos.response.*;
 import com.longtran.commonservice.models.entity.Item;
 import com.longtran.commonservice.services.items.ItemService;
@@ -27,13 +28,13 @@ import java.util.stream.Collectors;
 public class ItemController {
     ItemService itemService;
     ModelMapper modelMapper;
-    @GetMapping("")
-    public ResponseEntity<ResponseObject> getAllItems(
+    @GetMapping("/page")
+    public ResponseEntity<ResponseObject> getAllItemsPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size ) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<ItemResponse> itemResponsePage = itemService.getAllItems(pageable);
+        Page<ItemResponse> itemResponsePage = itemService.getAllItemsPage(pageable);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .message("Get all Departments")
@@ -54,33 +55,25 @@ public class ItemController {
 
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<ResponseObject> searchCategories(
-            @RequestParam(required = false) String itemCode,
-            @RequestParam(required = false) String itemName,
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size  ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ItemResponse> itemResponsePage = itemService.searchItems(
-                itemCode,itemName,categoryId,pageable
-        );
+    @GetMapping("")
+    public ResponseEntity<ResponseObject> getAllItems() {
+        List<ItemResponse> itemResponses = itemService.getAllItems();
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Get all Departments")
-                .result(
-                        ItemListResponse.builder()
-                                .itemResponses(itemResponsePage.getContent())
-                                .totalPages(itemResponsePage.getTotalPages())
-                                .currentPage(itemResponsePage.getNumber())
-                                .pageSize(itemResponsePage.getSize())
-                                .totalItems(itemResponsePage.getTotalElements())
-                                .isFirst(itemResponsePage.isFirst())
-                                .isLast(itemResponsePage.isLast())
-                                .hasNext(itemResponsePage.hasNext())
-                                .hasPrevious(itemResponsePage.hasPrevious())
-                                .build()
-                ) // Sử dụng content của Page object
+                .message("Get all Items")
+                .result(itemResponses)
+                .build());
+
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<ResponseObject> searchItems(
+            @RequestBody SearchItemRequest searchItemRequest) {
+        ItemListResponse itemListResponse = itemService.searchItems(searchItemRequest);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Get all Items")
+                .result(itemListResponse)
                 .build());
 
     }
@@ -151,5 +144,35 @@ public class ItemController {
                 .status(HttpStatus.OK)
                 .message("Deleted Item "+ request.getIds().toString() +" successfully")
                 .build());
+    }
+
+    @GetMapping("/categoryId")
+    public ResponseEntity<ResponseObject> getItemsByCategoryId(
+            @RequestParam("categoryId") Long categoryId)
+    {
+                List<ItemResponse> itemResponseList=itemService.getItemByCategoryId(categoryId);
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Item with categoryId: "+categoryId)
+                        .result(itemResponseList)
+                        .build()
+        );
+
+    }
+
+    @GetMapping("/categoryCode")
+    public ResponseEntity<ResponseObject> getItemsByCategoryCode(
+            @RequestParam("categoryCode") String categoryCode)
+    {
+        List<ItemResponse> itemResponseList=itemService.getItemByCategoryCode(categoryCode);
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Item with categoryCode: "+categoryCode)
+                        .result(itemResponseList)
+                        .build()
+        );
+
     }
 }

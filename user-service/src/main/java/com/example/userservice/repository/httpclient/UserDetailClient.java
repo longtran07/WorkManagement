@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(name="common-service",url = "localhost:8801/common/api/v1")
 public interface UserDetailClient {
-    @PostMapping(value = "/users",produces = MediaType.APPLICATION_JSON_VALUE)
-    Object creatUserDetail(@RequestBody UserDetailRequest userDetail);
+    @PostMapping(value = "/users/register",produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<UserDetailRequest> creatUserDetail(@RequestBody UserDetailRequest userDetail);
 
     @DeleteMapping("/users/delete-account/{username}")
     ResponseEntity<Object> deleteUserByUsername(@PathVariable("username") String username);

@@ -1,0 +1,12 @@
+.table-responsive {
+    overflow-x: auto;
+  }
+  
+  .table {
+    min-width: 1000px; /* Adjust this value as needed */
+  }
+  
+  .table th,
+  .table td {
+    white-space: nowrap;
+  }

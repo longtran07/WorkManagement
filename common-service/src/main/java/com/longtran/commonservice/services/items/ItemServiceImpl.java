@@ -3,8 +3,11 @@ package com.longtran.commonservice.services.items;
 import com.longtran.commons.exceptions.DataNotFoundException;
 import com.longtran.commonservice.models.dtos.request.DeleteRequest;
 import com.longtran.commonservice.models.dtos.request.ItemRequest;
+import com.longtran.commonservice.models.dtos.request.SearchItemRequest;
 import com.longtran.commonservice.models.dtos.response.CategoryResponse;
+import com.longtran.commonservice.models.dtos.response.ItemListResponse;
 import com.longtran.commonservice.models.dtos.response.ItemResponse;
+import com.longtran.commonservice.models.dtos.response.ListItemNameResponse;
 import com.longtran.commonservice.models.entity.Category;
 import com.longtran.commonservice.models.entity.Item;
 import com.longtran.commonservice.repositories.CategoryRepository;
@@ -20,6 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -35,21 +41,20 @@ public class ItemServiceImpl implements ItemService {
         if(itemRepository.existsByItemCode(itemRequest.getItemCode())){
             throw new DataNotFoundException("Item code already exists");
         }
-        if(itemRepository.existsByItemName(itemRequest.getItemName())){
-            throw new DataNotFoundException("Item name already exists");
+        Optional<Category> category= Optional.ofNullable(categoryRepository.findByCategoryCode(itemRequest.getCategoryCode()));
+        if(category.isPresent()){
+            Item item=Item.builder()
+                    .itemName(itemRequest.getItemName())
+                    .itemCode(itemRequest.getItemCode())
+                    .itemValue(itemRequest.getItemValue())
+                    .parentItemId(itemRequest.getParentItemId())
+                    .category(category.get())
+                    .status(itemRequest.getStatus())
+                    .build();
+            return itemRepository.save(item);
         }
-        Category category=categoryRepository.findById(itemRequest.getCategoryId()).orElseThrow(
-                () -> new DataNotFoundException("Category not found")
-        );
-        Item item=Item.builder()
-                .itemName(itemRequest.getItemName())
-                .itemCode(itemRequest.getItemCode())
-                .itemValue(itemRequest.getItemValue())
-                .parentItemId(itemRequest.getParentItemId())
-                .category(category)
-                .status(itemRequest.getStatus())
-                .build();
-        return itemRepository.save(item);
+        else throw new DataNotFoundException("Category not found");
+
     }
 
     @Override
@@ -57,21 +62,19 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new DataNotFoundException("Item with id " + id + " not found")
         );
-        if(itemRepository.existsByItemCode(itemRequest.getItemCode())){
+        // Check if item code already exists, excluding the current item
+        if(itemRepository.existsByItemCodeAndItemIdNot(itemRequest.getItemCode(), id)){
             throw new DataNotFoundException("Item code already exists");
         }
         item.setItemCode(itemRequest.getItemCode());
-        if(itemRepository.existsByItemName(itemRequest.getItemName())){
-            throw new DataNotFoundException("Item name already exists");
-        }
         item.setItemName(itemRequest.getItemName());
 
-        Category category=categoryRepository.findById(itemRequest.getCategoryId()).orElseThrow(
-                () -> new DataNotFoundException("Category not found")
-        );
+        Optional<Category> category= Optional.ofNullable(categoryRepository.findByCategoryCode(itemRequest.getCategoryCode()));
+        if(category.isPresent()){
+            item.setCategory(category.get());
+        }else throw new DataNotFoundException("Category not found");
         item.setItemValue(itemRequest.getItemValue());
         item.setParentItemId(itemRequest.getParentItemId());
-        item.setCategory(category);
         item.setStatus(itemRequest.getStatus());
 
         return itemRepository.save(item);
@@ -87,6 +90,30 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public List<ItemResponse> getAllItems() {
+        List<Item> items = itemRepository.findAll();
+        return items.stream()
+                .map(item -> modelMapper.map(item, ItemResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ItemResponse> getItemByCategoryId(Long categoryId) {
+        return itemRepository.findItemByCategoryCategoryId(categoryId)
+                .stream()
+                .map(item -> modelMapper.map(item,ItemResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ItemResponse> getItemByCategoryCode(String categoryCode) {
+        return itemRepository.findItemByCategoryCategoryCode(categoryCode)
+                .stream()
+                .map(item -> modelMapper.map(item,ItemResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Item getItemById(Long id) {
         return itemRepository.findById(id).orElseThrow(
                 () -> new DataNotFoundException("Item with id " + id + " not found")
@@ -94,7 +121,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Page<ItemResponse> getAllItems(Pageable pageable) {
+    public Page<ItemResponse> getAllItemsPage(Pageable pageable) {
         Page<Item> itemPage;
         itemPage=itemRepository.findAll(pageable);
         return itemPage.map(item -> modelMapper.map(item, ItemResponse.class));
@@ -120,14 +147,28 @@ public class ItemServiceImpl implements ItemService {
     }
 
         @Override
-        public Page<ItemResponse> searchItems (
-                String itemCode,
-                String itemName,
-                Long categoryId,
-                Pageable pageable){
-            Page<Item> itemPage = itemRepository.searchItems(itemCode, itemName, categoryId, pageable);
-            return itemPage.map(
+        public ItemListResponse searchItems (SearchItemRequest searchItemRequest){
+            Page<Item> itemPage = itemRepository.searchItems(
+                    searchItemRequest.getItemCode(),
+                    searchItemRequest.getItemName(),
+                    searchItemRequest.getCategoryCode(),
+                    PageRequest.of(searchItemRequest.getPage(),searchItemRequest.getSize())
+            );
+
+            Page<ItemResponse> itemResponsePage=itemPage.map(
                     item -> modelMapper.map(item, ItemResponse.class));
+
+            return ItemListResponse.builder()
+                    .itemResponses(itemResponsePage.getContent())
+                    .totalPages(itemResponsePage.getTotalPages())
+                    .currentPage(itemResponsePage.getNumber())
+                    .pageSize(itemResponsePage.getSize())
+                    .totalItems(itemResponsePage.getTotalElements())
+                    .isFirst(itemResponsePage.isFirst())
+                    .isLast(itemResponsePage.isLast())
+                    .hasNext(itemResponsePage.hasNext())
+                    .hasPrevious(itemResponsePage.hasPrevious())
+                    .build();
         }
 
 

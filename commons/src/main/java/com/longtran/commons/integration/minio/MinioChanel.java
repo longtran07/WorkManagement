@@ -71,6 +71,22 @@ public class MinioChanel {
                 }
             }
 
+    @SneakyThrows
+    public void deleteFile(@NonNull final String fileName) {
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(BUCKET)
+                            .object(fileName)
+                            .build()
+            );
+            log.info("Deleted file: {}", fileName);
+        } catch (Exception ex) {
+            log.error("Error deleting file: {}", ex.getMessage());
+            throw new BusinessException("400", "Unable to delete file", ex);
+        }
+    }
+
             @SneakyThrows
             public String upload(@NonNull final MultipartFile file) {
                 log.info("Bucket: {}, file size: {}", BUCKET, file.getSize());

@@ -1,0 +1,74 @@
+/* .custom-bg {
+  background: linear-gradient(135deg, #E9DEFA 0%, #FBFCDB 100%);
+}
+
+.custom-register-btn {
+  background: white;  
+  color: #8B5CF6;   
+  border-color: #8B5CF6;  
+  width: fit-content;
+  font-weight: bold;  
+  text-align: center; 
+}
+
+
+.btn-outline-purple:hover {
+  background-color: #8B5CF6;
+  color: white !important;
+}
+
+.custom-svg {
+  height: 200px;
+  width: 100%;
+}
+
+.custom-path {
+  fill: #8B5CF6;
+  opacity: 0.2;
+}
+
+.text-purple {
+  color: #8B5CF6;
+}
+
+.custom-login-btn {
+  background-color: #8B5CF6;
+  color: white;
+  font-weight: bold;
+  justify-content: center;
+}
+
+.custom-login-btn:hover {
+  background-color: #6B46C1;
+}
+
+.input-group-text,
+.form-control {
+  background-color: #F3F4F6 !important;
+}
+
+.form-control:focus {
+  box-shadow: none;
+  border-color: #8B5CF6;
+}
+
+.input-group-text {
+  color: #6B7280;
+}
+
+.max-w-md {
+  max-width: 28rem;
+}
+
+.btn, .form-control {
+  transition: all 0.2s ease-in-out;
+}
+
+.wave-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+} */

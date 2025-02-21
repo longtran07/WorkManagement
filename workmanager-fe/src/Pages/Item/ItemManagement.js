@@ -7,20 +7,26 @@ import Popup from '../../components/Popup/Delete';
 import Toast from '../../components/Toast/Toast';
 import ItemPopup from './ItemPopup';
 import './ItemManagement.css';
-import { itemApi } from '../../services/api-service/api';
-import httpClient from '../../configurations/httpClient';
-import { getToken } from '../../services/localStorageService';
-import { updateItem } from '../../services/api-service/ItemService';
+import {
+  fetchItems,
+  addItem,
+  updateItem,
+  deleteItem,
+  deleteItemsBatch
+} from '../../services/api-service/ItemService';
+import { getListCategories } from '../../services/api-service/CategoryService';
 
 const ItemManagement = () => {
   // State management
   const [items, setItems] = useState([]);
+
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10); // Default page size to 10
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -28,7 +34,6 @@ const ItemManagement = () => {
   const [searchForm, setSearchForm] = useState({
     itemCode: '',
     itemName: '',
-    itemValue: '',
     categoryCode: ''
   });
 
@@ -38,25 +43,26 @@ const ItemManagement = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [deleteMode, setDeleteMode] = useState('single');
 
-  // Add item state
+  // Add/Edit Item state
   const [showPopup, setShowPopup] = useState(false);
   const [ItemForm, setItemForm] = useState({
     itemCode: '',
     itemName: '',
     itemValue: '',
+    parentItemId:'',
     categoryCode: '',
     status: 1
   });
   const [isEdit, setIsEdit] = useState(false);
-  const [editItemId, setEditItemId] = useState(null); // State để lưu ID của category đang edit
-  
+  const [editItemId, setEditItemId] = useState(null); // State to store the ID of the item being edited
 
   // Table columns configuration
   const columns = [
     { key: 'itemCode', title: 'Mã hạng mục' },
     { key: 'itemName', title: 'Tên hạng mục' },
     { key: 'itemValue', title: 'Giá trị' },
-    { key: 'categoryCode', title: 'Danh mục cha' },
+    { key: 'parentItemId', title: 'Hạng mục cha' },
+    { key: 'categoryCode', title: 'Mã danh mục' },
     { 
       key: 'status', 
       title: 'Trạng thái',
@@ -69,27 +75,12 @@ const ItemManagement = () => {
   ];
 
   // Data fetching
-  const fetchItems = useCallback(async (page = 1, size = pageSize, searchParams = {}) => {
+  const fetchItemsData = useCallback(async (page = 1, size = pageSize, searchParams = {}) => {
     try {
       setLoading(true);
       setError(null);
-      
-      const params = new URLSearchParams({
-        page: page - 1,
-        size,
-        ...(searchParams.itemCode && { itemCode: searchParams.itemCode }),
-        ...(searchParams.itemName && { itemName: searchParams.itemName }),
-        ...(searchParams.itemValue && { itemValue: searchParams.itemValue }),
-        ...(searchParams.categoryCode && { categoryCode: searchParams.categoryCode })
-      });
 
-      const response = await httpClient.get(`${itemApi}/search?${params}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-
-      const { itemResponses, totalPages, totalItems } = response.data.result;
+      const { itemResponses, totalPages, totalItems } = await fetchItems(page, size, searchParams);
 
       if (!itemResponses || itemResponses.length === 0) {
         Toast.error("Không tìm thấy bản ghi");
@@ -98,10 +89,11 @@ const ItemManagement = () => {
       }
 
       const formattedData = itemResponses.map(item => ({
-        id: item.itemId,
+        itemId: item.itemId,
         itemCode: item.itemCode || '',
         itemName: item.itemName || '',
         itemValue: item.itemValue || '',
+        parentItemId: item.parentItemId || '',
         categoryCode: item.categoryCode || '',
         status: item.status === 1
       }));
@@ -120,38 +112,46 @@ const ItemManagement = () => {
   }, [pageSize]);
 
   useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+    debugger
+    fetchItemsData();
+    getListCategories().then(setCategories).catch(err => {
+      setError('Có lỗi xảy ra khi tải danh mục');
+      console.error('Fetch categories error:', err);
+    });
+  }, [fetchItemsData]);
 
   // Search handlers
-  const handleSearch = () => fetchItems(1, pageSize, searchForm);
+  const handleSearch = () => fetchItemsData(1, pageSize, searchForm);
   
   const handleSearchChange = (e) => {
+    
     const { name, value } = e.target;
-    setSearchForm(prev => ({ ...prev, [name]: value }));
+    setSearchForm(prev => ({
+       ...prev, [name]: value 
+
+    }));
   };
 
   const handleReset = () => {
     setSearchForm({
       itemCode: '',
       itemName: '',
-      itemValue: '',
       categoryCode: ''
     });
-    fetchItems(1, pageSize);
+    fetchItemsData(1, pageSize);
   };
 
   // Pagination handlers
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
-      fetchItems(page, pageSize, searchForm);
+      fetchItemsData(page, pageSize, searchForm);
     }
   };
 
   const handlePageSizeChange = (newSize) => {
     setPageSize(newSize);
     setCurrentPage(1);
-    fetchItems(1, newSize, searchForm);
+    fetchItemsData(1, newSize, searchForm);
   };
 
   // CRUD operations
@@ -162,14 +162,16 @@ const ItemManagement = () => {
   };
 
   const handleUpdate = (item) => {
+    debugger
     setItemForm({
       itemCode: item.itemCode,
-        itemName: item.itemName,
-        itemValue: item.itemValue,
-        categoryCode: item.categoryCode,
-        status: item.status ? 1 : 0
+      itemName: item.itemName,
+      itemValue: item.itemValue,
+      parentItemId: item.parentItemId,
+      categoryCode: item.categoryCode,
+      status: item.status ? 1 : 0
     });
-    setEditItemId(item.id); // Gán ID của category đang edit
+    setEditItemId(item.itemId); // Set the ID of the item being edited
     setIsEdit(true);
     setShowPopup(true);
   };
@@ -183,17 +185,13 @@ const ItemManagement = () => {
   const confirmDelete = async () => {
     try {
       if (deleteMode === 'single') {
-        await httpClient.delete(
-          `${itemApi}/delete-by-item-code/${itemToDelete.itemCode}`
-        );
+        await deleteItem(itemToDelete.itemCode);
       } else {
-        await httpClient.delete(`${itemApi}/batch`, {
-          data: { ids: selectedItems }
-        });
+        await deleteItemsBatch(selectedItems);
       }
 
       Toast.success("Xóa thành công");
-      fetchItems(currentPage, pageSize, searchForm);
+      fetchItemsData(currentPage, pageSize, searchForm);
       setSelectedItems([]);
     } catch (error) {
       console.error('Delete error:', error);
@@ -207,25 +205,24 @@ const ItemManagement = () => {
   // Form handlers
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setItemForm(prev => ({
-       ...prev, [name]: value 
-      }));
+    setItemForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAddItem = async (e) => {
     e.preventDefault();
     try {
-      await httpClient.post(itemApi, ItemForm);
+      await addItem(ItemForm);
       Toast.success("Thêm hạng mục thành công");
       setShowPopup(false);
       setItemForm({
         itemCode: '',
         itemName: '',
         itemValue: '',
+        parentItemId: '',
         categoryCode: '',
         status: 1
       });
-      fetchItems(currentPage, pageSize, searchForm);
+      fetchItemsData(currentPage, pageSize, searchForm);
     } catch (error) {
       Toast.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm");
     }
@@ -234,17 +231,18 @@ const ItemManagement = () => {
   const handleUpdateItem = async (e) => {
     e.preventDefault();
     try {
-      await updateItem(editItemId, ItemForm); // Gửi yêu cầu cập nhật với ID đúng
+      await updateItem(editItemId, ItemForm); // Send the update request with the correct ID
       Toast.success("Cập nhật danh mục thành công");
       setShowPopup(false);
       setItemForm({
         itemCode: '',
         itemName: '',
         itemValue: '',
+        parentItemId: '',
         categoryCode: '',
         status: 1
       });
-      fetchItems(currentPage, pageSize, searchForm);
+      fetchItemsData(currentPage, pageSize, searchForm);
     } catch (error) {
       Toast.error(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
     }
@@ -270,11 +268,12 @@ const ItemManagement = () => {
             className="btn btn-primary d-flex align-items-center gap-2"
             onClick={() => {
               setShowPopup(true);
-              setEditItemId(false);
+              setIsEdit(false);
               setItemForm({
                 itemCode: '',
                 itemName: '',
                 itemValue: '',
+                parentItemId: '',
                 categoryCode: '',
                 status: 1
               });
@@ -324,26 +323,20 @@ const ItemManagement = () => {
             </div>
             <div className="col-md-6">
               <div className="form-group">
-                <label className="form-label">Giá trị</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="itemValue"
-                  value={searchForm.itemValue}
-                  onChange={handleSearchChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label className="form-label">Danh mục cha</label>
-                <input
-                  type="text"
-                  className="form-control"
+                <label className="form-label">Mã danh mục</label>
+                <select
+                  className="custom-select"
                   name="categoryCode"
                   value={searchForm.categoryCode}
                   onChange={handleSearchChange}
-                />
+                >
+                  <option value=""></option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.categoryCode}>
+                      {category.categoryCode}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="col-12">
@@ -393,6 +386,7 @@ const ItemManagement = () => {
             onSelectOne={handleSelectOne}
             onEdit={handleUpdate}
             onDelete={handleDelete}
+            idField='itemId'
           />
           
           <Pagination

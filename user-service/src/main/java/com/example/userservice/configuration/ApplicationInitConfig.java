@@ -38,12 +38,10 @@ public class ApplicationInitConfig {
                         UserDetailRequest
                                 .builder()
                                 .username("admin")
-                                .departmentId(130L)
                                 .email("admin@email.test.vn")
-                                .firstName("Admin")
-                                .lastName("Test")
+
                                 .phoneNumber("00000000")
-                                .status(1)
+
                                 .build());
                 log.warn("admin user has been created with default password: admin, please change it");
             }

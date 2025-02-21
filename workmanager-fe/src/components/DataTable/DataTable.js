@@ -12,7 +12,8 @@ const DataTable = ({
   onSelectAll,
   onSelectOne,
   onEdit,
-  onDelete
+  onDelete,
+  idField = 'id'
 }) => {
   const renderCell = (item, column) => {
     if (column.render) {
@@ -23,7 +24,7 @@ const DataTable = ({
 
   const handleSelectAll = (e) => {
     if (onSelectAll) {
-      const selected = e.target.checked ? data.map(item => item.id) : [];
+      const selected = e.target.checked ? data.map(item => item[idField]) : [];
       onSelectAll(selected);
     }
   };
@@ -31,12 +32,12 @@ const DataTable = ({
   const handleSelectOne = (item, e) => {
     if (onSelectOne) {
       const isSelected = e.target.checked;
-      onSelectOne(item.id, isSelected);
+      onSelectOne(item[idField], isSelected);
     }
   };
 
   const isSelected = (item) => {
-    return selectedItems.includes(item.id);
+    return selectedItems.includes(item[idField]);
   };
 
   const renderActions = (item) => {
@@ -83,13 +84,13 @@ const DataTable = ({
             <th>STT</th>
             {actions && <th>Hành động</th>}
             {columns.map((column) => (
-              <th key={column.key}>{column.title}</th>
+              <th key={column.key} style={{ minWidth: column.width || '150px' }}>{column.title}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {data.map((item, index) => (
-            <tr key={item.id}>
+            <tr key={item[idField]}>
               {selectable && (
                 <td>
                   <input 
@@ -103,7 +104,7 @@ const DataTable = ({
               <td>{((currentPage - 1) * pageSize) + index + 1}</td>
               {actions && <td>{renderActions(item)}</td>}
               {columns.map((column) => (
-                <td key={column.key}>{renderCell(item, column)}</td>
+                <td key={column.key} style={{ minWidth: column.width || '150px' }}>{renderCell(item, column)}</td>
               ))}
             </tr>
           ))}

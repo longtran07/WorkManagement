@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,13 +23,22 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     UserService userService;
 
-    @PostMapping
-    ResponseEntity<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request){
-        return ResponseEntity.ok(userService.createUser(request));
+    @PostMapping("/register")
+    ResponseEntity<ResponseObject> createUser(@RequestBody @Valid UserCreationRequest request){
+        UserResponse userResponse=userService.createUser(request);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("ACCEPTED")
+                        .result(
+                               userResponse
+                        )
+                        .status(HttpStatus.OK)
+                        .build()
+        );
     }
 
     @PutMapping("/{userId}")
-    ResponseEntity<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdatePasswordRequest request){
+    ResponseEntity<UserResponse> updatePassword(@PathVariable String userId, @RequestBody UserUpdatePasswordRequest request){
         return ResponseEntity.ok().body(userService.updatePassword(userId, request));
     }
 

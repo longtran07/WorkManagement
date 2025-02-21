@@ -12,6 +12,8 @@ import lombok.*;
 @NoArgsConstructor
 
 public class ItemResponse {
+    private Long itemId;
+
 
     private String itemName;
 
@@ -20,11 +22,9 @@ public class ItemResponse {
 
     private String itemValue;
 
-
     private Long parentItemId;
 
-
-    private String category_code;
+    private String categoryCode;
 
     private Integer status;
 }

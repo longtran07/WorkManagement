@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
@@ -29,11 +31,19 @@ public class CategoryServiceImpl implements CategoryService {
     ModelMapper modelMapper;
 
     @Override
-    public Page<CategoryResponse> getAllCategories(int page, int size) {
+    public Page<CategoryResponse> getAllCategoriesPage(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Category> categoryPage;
         categoryPage=categoryRepository.findAll(pageable);
         return categoryPage.map(category -> modelMapper.map(category, CategoryResponse.class));
+    }
+
+    @Override
+    public List<CategoryResponse> getAllCategories() {
+        List<Category> categories=categoryRepository.findAll();
+        return categories.stream()
+                .map(category -> modelMapper.map(category,CategoryResponse.class))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -47,12 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
         if(categoryRepository.existsByCategoryCode(categoryRequest.getCategoryCode())) {
             throw new EntityExistsException("Category already exists");
         }
-        Category category=new Category();
-        category.setCreatedUser(categoryRequest.getCreatedUser());
-        category.setUpdatedUser(categoryRequest.getUpdatedUser());
-        category.setCategoryCode(categoryRequest.getCategoryCode());
-        category.setCategoryName(categoryRequest.getCategoryName());
-        category.setStatus(categoryRequest.getStatus());
+        Category category=modelMapper.map( categoryRequest, Category.class);
         return categoryRepository.save(category);
     }
 
@@ -72,6 +77,15 @@ public class CategoryServiceImpl implements CategoryService {
                 ()->new DataNotFoundException("Department with id " + categoryId + " not found")
         );
         categoryRepository.delete(category);
+    }
+
+    @Override
+    public CategoryResponse getCategoryByCategoryCode(String categoryCode) {
+        Optional<Category> category= Optional.ofNullable(categoryRepository.findByCategoryCode(categoryCode));
+        if(category.isPresent()){
+            return modelMapper.map(category.get(), CategoryResponse.class);
+        }else
+            throw new DataNotFoundException("Category not found by code " + categoryCode);
     }
 
     @Override

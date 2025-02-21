@@ -5,7 +5,6 @@ import Pagination from '../../components/Pagination/Pagination';
 import Popup from '../../components/Popup/Delete';
 import Toast from '../../components/Toast/Toast';
 import UserPopup from './UserPopup';
-import './UserManagement.css';
 import {
   fetchUsers,
   addUser,
@@ -60,6 +59,7 @@ const UserManagement = () => {
     { key: 'firstName', title: 'Tên' },
     { key: 'phone', title: 'Số điện thoại' },
     { key: 'email', title: 'Email' },
+    { key: 'departmentName', title: 'Phòng ban' },
     {
       key: 'status',
       title: 'Trạng thái',
@@ -87,14 +87,15 @@ const UserManagement = () => {
         return;
       }
 
-      const formattedUsers = userResponses.map((item) => ({
-        id: item.id,
-        username: item.username || '',
-        firstName: item.first_name || '',
-        lastName: item.last_name || '',
-        phone: item.phone_number || '',
-        email: item.email || '',
-        status: item.status === 1
+      const formattedUsers = userResponses.map((user) => ({
+        id: user.userId,
+        username: user.username || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        phone: user.phoneNumber || '',
+        email: user.email || '',
+        departmentName: user.departmentName || '',
+        status: user.status === 1
       }));
 
       setUsers(formattedUsers);
@@ -158,6 +159,7 @@ const UserManagement = () => {
   };
 
   const handleUpdate = (user) => {
+    debugger
     setUserForm({
       username: user.username,
       firstName: user.firstName,
@@ -178,6 +180,7 @@ const UserManagement = () => {
   };
 
   const confirmDelete = async () => {
+    
     try {
       if (deleteMode === 'single') {
         await deleteUser(userToDelete.id);
@@ -226,6 +229,7 @@ const UserManagement = () => {
   };
 
   const handleUpdateUser = async (e) => {
+    debugger
     e.preventDefault();
     try {
       await updateUser(editUserId, userForm); 

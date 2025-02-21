@@ -21,7 +21,7 @@ public class AppConfig {
                     mapper.map(Item::getItemCode, ItemResponse::setItemCode);
                     mapper.map(Item::getItemValue, ItemResponse::setItemValue);
                     mapper.map(Item::getParentItemId, ItemResponse::setParentItemId);
-                    mapper.map( src -> src.getCategory().getCategoryCode(), ItemResponse::setCategory_code);
+                    mapper.map( src -> src.getCategory().getCategoryCode(), ItemResponse::setCategoryCode);
                     mapper.map(Item::getStatus, ItemResponse::setStatus);
                 });
         return new ModelMapper();

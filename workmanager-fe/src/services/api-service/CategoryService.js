@@ -1,5 +1,8 @@
 import httpClient from '../../configurations/httpClient';
-import { categoryApi } from '../../services/api-service/api';
+// import { categoryApi } from '../../services/api-service/api';
+import { API } from '../../configurations/configuration';
+
+const categoryApi = API.CATEGORY;
 
 export const fetchCategories = async (page, size, searchParams) => {
   const params = new URLSearchParams({
@@ -10,6 +13,11 @@ export const fetchCategories = async (page, size, searchParams) => {
   });
 
   const response = await httpClient.get(`${categoryApi}/search?${params}`);
+  return response.data.result;
+};
+
+export const getListCategories = async () => {
+  const response = await httpClient.get(API.CATEGORY);
   return response.data.result;
 };
 

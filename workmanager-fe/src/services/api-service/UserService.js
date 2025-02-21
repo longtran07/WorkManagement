@@ -1,17 +1,17 @@
+import { API } from '../../configurations/configuration';
 import httpClient from '../../configurations/httpClient';
-import { userApi } from '../../services/api-service/api';
+
+const userApi=API.USER;
 
 export const fetchUsers = async (page, size, searchParams) => {
-  const params = new URLSearchParams({
-    page: page - 1,
-    size,
-    ...(searchParams.username && { username: searchParams.username }),
-    ...(searchParams.name && { name: searchParams.name }),
-    ...(searchParams.email && { email: searchParams.email }),
-    ...(searchParams.phone && { phone: searchParams.phone })
-  });
 
-  const response = await httpClient.get(`${userApi}/search?${params}`);
+  const requestBody = {
+    ...searchParams,
+    page: page - 1, // API thường bắt đầu page từ 0
+    size
+  };
+
+  const response = await httpClient.post(`${userApi}/search`,requestBody);
   return response.data.result;
 };
 
@@ -21,6 +21,7 @@ export const addUser = async (userForm) => {
 };
 
 export const updateUser = async (id, userForm) => {
+  debugger
   const response = await httpClient.put(`${userApi}/${id}`, userForm);
   return response.data.result;
 };

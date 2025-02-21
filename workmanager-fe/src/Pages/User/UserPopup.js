@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import GenericFormPopup from '../../components/Popup/GenericFormPopup';
+import { getAllDepartment } from '../../services/api-service/DepartmentService';
 
-const UserForm = ({ formData, onChange, isEdit }) => (
+const UserForm = ({ formData, onChange, isEdit, departments }) => (
   <div>
     <div className="form-row">
       <div className="form-group">
@@ -36,6 +37,8 @@ const UserForm = ({ formData, onChange, isEdit }) => (
           placeholder="Nhập họ"
         />
       </div>
+    </div>
+    <div className="form-row">
 
       <div className="form-group">
         <label className="custom-label">
@@ -68,6 +71,8 @@ const UserForm = ({ formData, onChange, isEdit }) => (
           placeholder="Nhập email"
         />
       </div>
+    </div>
+    <div className="form-row">
 
       <div className="form-group">
         <label className="custom-label">
@@ -84,9 +89,7 @@ const UserForm = ({ formData, onChange, isEdit }) => (
           placeholder="Nhập số điện thoại"
         />
       </div>
-    </div>
 
-    <div className="form-row">
       <div className="form-group">
         <label className="custom-label">
           Trạng thái
@@ -102,10 +105,43 @@ const UserForm = ({ formData, onChange, isEdit }) => (
         </select>
       </div>
     </div>
+    <div className="form-group">
+      <label className="custom-label">
+        Phòng ban
+      </label>
+      <select
+        className="custom-select"
+        name="departmentId"
+        value={formData.departmentId || ''}
+        onChange={onChange}
+      >
+        <option value="">Phòng ban</option>
+        {departments.map((department) => (
+          <option key={department.id} value={department.id}>
+            {department.departmentName}
+          </option>
+        ))}
+      </select>
+    </div>
   </div>
 );
 
 const UserPopup = ({ show, onClose, onSubmit, formData, onChange, isEdit }) => {
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const departmentData = await getAllDepartment();
+        setDepartments(departmentData);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
+
   return (
     <GenericFormPopup
       show={show}
@@ -113,7 +149,7 @@ const UserPopup = ({ show, onClose, onSubmit, formData, onChange, isEdit }) => {
       onSubmit={onSubmit}
       title={isEdit ? 'Cập nhật user' : 'Thêm user'}
     >
-      <UserForm formData={formData} onChange={onChange} isEdit={isEdit} />
+      <UserForm formData={formData} onChange={onChange} isEdit={isEdit} departments={departments} />
     </GenericFormPopup>
   );
 };

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -32,11 +33,19 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public Page<DepartmentResponse> getAllDepartments(int page, int size) {
+    public Page<DepartmentResponse> getAllDepartmentsPage(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Department> departmentPage;
         departmentPage=departmentRepository.findAll(pageable);
         return departmentPage.map(department -> modelMapper.map(department, DepartmentResponse.class));
+    }
+
+    @Override
+    public List<DepartmentResponse> getAllDepartments() {
+
+        return departmentRepository.findAll().stream()
+                .map(department -> modelMapper.map(department,DepartmentResponse.class))
+                .toList();
     }
 
     @Override

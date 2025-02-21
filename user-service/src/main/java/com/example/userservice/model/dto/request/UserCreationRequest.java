@@ -21,19 +21,7 @@ public class UserCreationRequest {
 
     private String email;
 
-    @JsonProperty("phone_number")
     private String phoneNumber;
 
-    @JsonProperty("first_name")
-    private String firstName;
-
-    @JsonProperty("last_name")
-    private String lastName;
-
-    @ManyToOne()
-    @JsonProperty("department_id")
-    private Long departmentId;
-
-    private Integer status;
 }
 

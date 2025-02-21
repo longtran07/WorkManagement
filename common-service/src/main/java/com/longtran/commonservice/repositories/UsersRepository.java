@@ -10,14 +10,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface UsersRepository extends JpaRepository<User, Long> {
-
     boolean existsByEmail(String email);
     boolean existsByPhoneNumber(String phoneNumber);
     boolean existsByUsername(String username);
     User findByUsername(String username);
 
     Page<User> findAll(Pageable pageable);
-
+    boolean existsByEmailAndUserIdNot(String email, Long userId);
+    boolean existsByUsernameAndUserIdNot(String username, Long userId);
+    boolean existsByPhoneNumberAndUserIdNot(String phoneNumber, Long userId);
 
     void deleteByUsername(String username);
 

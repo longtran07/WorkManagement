@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/v1/department")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -22,12 +24,12 @@ public class DepartmentController {
     DepartmentService departmentService;
     ModelMapper modelMapper;
 
-    @GetMapping("")
-    public ResponseEntity<ResponseObject> getAllDepartments(
+    @GetMapping("/page")
+    public ResponseEntity<ResponseObject> getAllDepartmentsPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<DepartmentResponse> departmentResponsePage = departmentService.getAllDepartments(page, size);
+        Page<DepartmentResponse> departmentResponsePage = departmentService.getAllDepartmentsPage(page, size);
 
 
         return ResponseEntity.ok().body(ResponseObject.builder()
@@ -46,6 +48,20 @@ public class DepartmentController {
                         .hasPrevious(departmentResponsePage.hasPrevious())
                         .build()
                 ) // Sử dụng content của Page object
+                .build());
+    }
+
+    @GetMapping("")
+    public ResponseEntity<ResponseObject> getAllDepartments(
+
+    ) {
+        List<DepartmentResponse> departmentResponses = departmentService.getAllDepartments();
+
+
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Get all Departments")
+                .result(departmentResponses)
                 .build());
     }
 

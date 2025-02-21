@@ -1,0 +1,26 @@
+server:
+  port: 8803
+  servlet:
+    context-path: /work
+
+eureka:
+  client: service-url.default-zone=http://localhost:8761/eureka
+
+spring:
+  application:
+    name: work-service
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:orcl
+    password: wfm
+    username: wfm
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+#    database-platform: org.hibernate.dialect.Oracle12cDialect
+
+
+
+
+

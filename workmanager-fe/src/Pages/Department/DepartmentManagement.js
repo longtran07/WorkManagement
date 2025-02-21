@@ -6,11 +6,14 @@ import Pagination from '../../components/Pagination/Pagination';
 import Popup from '../../components/Popup/Delete';
 import Toast from '../../components/Toast/Toast';
 import DepartmentPopup from './DepartmentPopup';
-import { updateDepartment } from '../../services/api-service/DepartmentService';
+import {
+  fetchDepartments,
+  addDepartment,
+  updateDepartment,
+  deleteDepartment,
+  deleteDepartmentsBatch
+} from '../../services/api-service/DepartmentService';
 import './DepartmentManagement.css';
-import { departmentApi } from '../../services/api-service/api';
-import httpClient from '../../configurations/httpClient';
-import { getToken } from '../../services/localStorageService';
 
 const DepartmentManagement = () => {
   // State management
@@ -20,7 +23,7 @@ const DepartmentManagement = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10); // Default page size to 10
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -46,8 +49,6 @@ const DepartmentManagement = () => {
   });
   const [isEdit, setIsEdit] = useState(false);
   const [editDepartmentId, setEditDepartmentId] = useState(null); // State để lưu ID của category đang edit
-  
-
 
   // Table columns configuration
   const columns = [
@@ -66,26 +67,12 @@ const DepartmentManagement = () => {
   ];
 
   // Data fetching
-  const fetchDepartments = useCallback(async (page = 1, size = pageSize, searchParams = {}) => {
+  const fetchDepartmentsData = useCallback(async (page = 1, size = pageSize, searchParams = {}) => {
     try {
       setLoading(true);
       setError(null);
       
-      const params = new URLSearchParams({
-        page: page - 1,
-        size,
-        ...(searchParams.departmentCode && { departmentCode: searchParams.departmentCode }),
-        ...(searchParams.departmentName && { departmentName: searchParams.departmentName })
-      });
-debugger
-      const response = await httpClient.get(`${departmentApi}/search?${params}`,{
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-
-
-      const { departmentResponses, totalPages, totalItems } = response.data.result;
+      const { departmentResponses, totalPages, totalItems } = await fetchDepartments(page, size, searchParams);
 
       if (!departmentResponses || departmentResponses.length === 0) {
         Toast.error("Không tìm thấy bản ghi");
@@ -115,36 +102,36 @@ debugger
   }, [pageSize]);
 
   useEffect(() => {
-    fetchDepartments();
-  }, [fetchDepartments]);
+    fetchDepartmentsData();
+  }, [fetchDepartmentsData]);
 
   // Search handlers
-  const handleSearch = () => fetchDepartments(1, pageSize, searchForm);
+  const handleSearch = () => fetchDepartmentsData(1, pageSize, searchForm);
   
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
     setSearchForm(prev => ({ ...prev, [name]: value }));
   };
-  // Reset form tìm kiếm
+
   const handleReset = () => {
     setSearchForm({ 
       departmentCode: '', 
       departmentName: '' 
     });
-    fetchDepartments(1, pageSize);
+    fetchDepartmentsData(1, pageSize);
   };
 
   // Pagination handlers
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
-      fetchDepartments(page, pageSize, searchForm);
+      fetchDepartmentsData(page, pageSize, searchForm);
     }
   };
 
   const handlePageSizeChange = (newSize) => {
     setPageSize(newSize);
     setCurrentPage(1);
-    fetchDepartments(1, newSize, searchForm);
+    fetchDepartmentsData(1, newSize, searchForm);
   };
 
   // CRUD operations
@@ -158,10 +145,10 @@ debugger
     setDepartmentForm({
       departmentCode: department.departmentCode,
       departmentName: department.departmentName,
-      parentDepartmentId:department.parentDepartmentId,
+      parentDepartmentId: department.parentDepartmentId,
       status: department.status ? 1 : 0
     });
-    setEditDepartmentId(department.id); // Gán ID của category đang edit
+    setEditDepartmentId(department.id);
     setIsEdit(true);
     setShowPopup(true);
   };
@@ -175,17 +162,13 @@ debugger
   const confirmDelete = async () => {
     try {
       if (deleteMode === 'single') {
-        await httpClient.delete(
-          `${departmentApi}/delete-by-department-code/${departmentToDelete.departmentCode}`
-        );
+        await deleteDepartment(departmentToDelete.departmentCode);
       } else {
-        await httpClient.delete(`${departmentApi}/batch`, {
-          data: { ids: selectedDepartments }
-        });
+        await deleteDepartmentsBatch(selectedDepartments);
       }
 
       Toast.success("Xóa thành công");
-      fetchDepartments(currentPage, pageSize, searchForm);
+      fetchDepartmentsData(currentPage, pageSize, searchForm);
       setSelectedDepartments([]);
     } catch (error) {
       console.error('Delete error:', error);
@@ -205,7 +188,7 @@ debugger
   const handleAddDepartment = async (e) => {
     e.preventDefault();
     try {
-      await httpClient.post(departmentApi, DepartmentForm);
+      await addDepartment(DepartmentForm);
       Toast.success("Thêm phòng ban thành công");
       setShowPopup(false);
       setDepartmentForm({
@@ -214,7 +197,7 @@ debugger
         parentDepartmentId: '',
         status: 1
       });
-      fetchDepartments(currentPage, pageSize, searchForm);
+      fetchDepartmentsData(currentPage, pageSize, searchForm);
     } catch (error) {
       Toast.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm");
     }
@@ -223,7 +206,7 @@ debugger
   const handleUpdateDepartment = async (e) => {
     e.preventDefault();
     try {
-      await updateDepartment(editDepartmentId, DepartmentForm); // Gửi yêu cầu cập nhật với ID đúng
+      await updateDepartment(editDepartmentId, DepartmentForm);
       Toast.success("Cập nhật danh mục thành công");
       setShowPopup(false);
       setDepartmentForm({
@@ -232,12 +215,11 @@ debugger
         parentDepartmentId: '',
         status: 1
       });
-      fetchDepartments(currentPage, pageSize, searchForm);
+      fetchDepartmentsData(currentPage, pageSize, searchForm);
     } catch (error) {
       Toast.error(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
     }
   };
-
 
   // Selection handlers
   const handleSelectAll = (selectedIds) => setSelectedDepartments(selectedIds);

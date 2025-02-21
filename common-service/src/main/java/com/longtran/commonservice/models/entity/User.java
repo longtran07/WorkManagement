@@ -28,8 +28,6 @@ public class User extends BaseEntity {
     @Column(name = "username", length = 500)
     private String username;
 
-//    @Column(name = "password", length = 100)
-//    private String password;
 
     @Column(name = "email", length = 500)
     private String email;
@@ -55,5 +53,11 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private Set<UserRole> userRoles;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Address address;
+
+    @Column(name = "AVATAR_URL")
+    private String avatarUrl;
 
 }

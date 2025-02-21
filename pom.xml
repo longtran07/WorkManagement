@@ -28,6 +28,7 @@
         <module>common-service</module>
         <module>gateway-service</module>
         <module>user-service</module>
+        <module>work-service</module>
     </modules>
     <build>
         <plugins>

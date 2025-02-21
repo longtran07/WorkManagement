@@ -12,11 +12,13 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface CategoryService {
-    Page<CategoryResponse> getAllCategories(int page, int size );
+    Page<CategoryResponse> getAllCategoriesPage(int page, int size );
+    List<CategoryResponse> getAllCategories();
     Category getCategoryById(Long id);
     Category addCategory(CategoryRequest categoryRequest);
     Category updateCategory(Long categoryId, CategoryRequest categoryRequest);
     void deleteCategory(Long id);
+    CategoryResponse getCategoryByCategoryCode(String categoryCode);
 
 
     void deleteByCategoryCode(String categoryCode);

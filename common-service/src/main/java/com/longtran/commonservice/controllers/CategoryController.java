@@ -23,12 +23,12 @@ public class CategoryController {
     private final CategoryService categoryService;
     private final ModelMapper modelMapper;
 
-    @GetMapping("")
-    public ResponseEntity<ResponseObject> getAllCategories(
+    @GetMapping("/page")
+    public ResponseEntity<ResponseObject> getAllCategoriesPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<CategoryResponse> categoryResponsePage = categoryService.getAllCategories(page, size);
+        Page<CategoryResponse> categoryResponsePage = categoryService.getAllCategoriesPage(page, size);
 
         int totalPages= categoryResponsePage.getTotalPages();
         List<CategoryResponse>categoryResponses=categoryResponsePage.getContent();
@@ -39,6 +39,16 @@ public class CategoryController {
                                 .categoryResponses(categoryResponses)
                                 .totalPages(totalPages).build()) // Sử dụng content của Page object
 
+                .build());
+    }
+
+    @GetMapping("")
+    public ResponseEntity<ResponseObject> getAllCategories() {
+        List<CategoryResponse>categoryResponses=categoryService.getAllCategories();
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Get all categories")
+                .result(categoryResponses)
                 .build());
     }
 
@@ -79,6 +89,16 @@ public class CategoryController {
                         .status(HttpStatus.OK)
                         .message("Get category information successfully")
                         .result(modelMapper.map(category, CategoryResponse.class))
+                .build());
+    }
+    @GetMapping("/categoryCode/{categoryCode}")
+    public ResponseEntity<ResponseObject> getCategoryByCategoryCode(
+            @RequestParam("categoryCode") String categoryCode) {
+        CategoryResponse categoryByCategoryCode = categoryService.getCategoryByCategoryCode(categoryCode);
+        return ResponseEntity.ok().body(com.longtran.commonservice.models.dtos.response.ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Get category information successfully")
+                .result(categoryByCategoryCode)
                 .build());
     }
     @PostMapping("")

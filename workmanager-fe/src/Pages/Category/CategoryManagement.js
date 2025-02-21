@@ -5,7 +5,6 @@ import DataTable from '../../components/DataTable/DataTable';
 import Pagination from '../../components/Pagination/Pagination';
 import Popup from '../../components/Popup/Delete';
 import CategoryPopup from './CategoryPopup';
-import './CategoryManagement.css';
 import Toast from '../../components/Toast/Toast';
 import {
   fetchCategories,

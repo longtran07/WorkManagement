@@ -1,12 +1,14 @@
 package com.longtran.commons.exceptions;
 
 import com.longtran.commons.models.dtos.response.ResponseObject;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Configuration
 @RestControllerAdvice // Chỉ định lớp này xử lý ngoại lệ chung
 public class GlobalExceptionHandler {
 
